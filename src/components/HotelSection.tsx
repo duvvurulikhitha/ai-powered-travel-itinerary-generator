@@ -120,7 +120,7 @@ export default function HotelSection({
                 </p>
               </div>
 
-              {/* Layout Actions pricing & control bar */}
+              {/* Layout Actions pricing & external link */}
               <div className="flex md:flex-col items-end justify-between w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 gap-3">
                 <div className="flex flex-col items-start md:items-end">
                   <span className="text-[9px] uppercase font-mono tracking-widest text-white/40 font-semibold">
@@ -131,22 +131,8 @@ export default function HotelSection({
                   </span>
                 </div>
 
-                {/* Map actions layout block */}
+                {/* Map actions layout block - Cleaned up to show only Google Maps */}
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  {/* VIEW ON MAP - Safely updates internal application interactive map state */}
-                  <button
-                    type="button"
-                    onClick={() => onSelectHotel && onSelectHotel(hotel)}
-                    className={`px-2.5 py-1.5 rounded text-[10px] uppercase font-mono tracking-wider transition-all border font-bold ${
-                      isActive
-                        ? "bg-[#d4af37] text-black border-[#d4af37]"
-                        : "bg-transparent text-[#d4af37] border-white/10 hover:border-[#d4af37]/40"
-                    }`}
-                  >
-                    View On Map
-                  </button>
-
-                  {/* GOOGLE MAPS - Safely links to external window target */}
                   <a
                     href={googleMapsUrl}
                     target="_blank"
