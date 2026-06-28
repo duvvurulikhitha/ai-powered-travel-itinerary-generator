@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Hotel } from "../types";
-import { Star, MapPin, Building, ChevronRight, DollarSign } from "lucide-react";
+import { Star, MapPin, Building, ExternalLink } from "lucide-react";
 
 interface HotelSectionProps {
   hotels: Hotel[];
@@ -8,9 +8,8 @@ interface HotelSectionProps {
   activeHotelName?: string;
 }
 
-// Micro-component to look up hotel-specific imagery dynamically from Unsplash
 function DynamicHotelImage({ hotelName, className }: { hotelName: string; className?: string }) {
-  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600"); // Quality fallback
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600");
 
   useEffect(() => {
     async function fetchHotelImage() {
@@ -75,6 +74,11 @@ export default function HotelSection({
         {hotels.map((hotel, idx) => {
           const isActive = activeHotelName === hotel.hotelName;
 
+          // Safely build dynamic Google Maps deep links
+          const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            `${hotel.hotelName} ${hotel.address || ""}`
+          )}`;
+
           return (
             <div
               id={`hotel-card-${idx}`}
@@ -82,11 +86,11 @@ export default function HotelSection({
               onClick={() => onSelectHotel && onSelectHotel(hotel)}
               className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col md:flex-row gap-4 items-stretch md:items-start ${
                 isActive
-                  ? "border-gold bg-gold/10 ring-1 ring-gold shadow-sm"
+                  ? "border-gold bg-gold/5 ring-1 ring-gold shadow-sm"
                   : "border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10"
               }`}
             >
-              {/* Dynamic Unsplash Image wrapper using your original container sizes */}
+              {/* Hotel Card Image */}
               <div className="w-full md:w-32 h-28 md:h-24 rounded-lg overflow-hidden border border-white/10 shrink-0">
                 <DynamicHotelImage
                   hotelName={hotel.hotelName}
@@ -94,6 +98,7 @@ export default function HotelSection({
                 />
               </div>
 
+              {/* Text Info Area */}
               <div className="flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-white text-sm md:text-base leading-tight font-serif">
@@ -115,7 +120,8 @@ export default function HotelSection({
                 </p>
               </div>
 
-              <div className="flex md:flex-col items-end justify-between w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 gap-2">
+              {/* Layout Fixed: Rate Label + Match styling for Map Actions */}
+              <div className="flex md:flex-col items-end justify-between w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 gap-3">
                 <div className="flex flex-col items-start md:items-end">
                   <span className="text-[9px] uppercase font-mono tracking-widest text-white/40 font-semibold">
                     EST. RATE
@@ -125,19 +131,32 @@ export default function HotelSection({
                   </span>
                 </div>
 
-                <button
-                  id={`locate-hotel-${idx}`}
-                  type="button"
-                  className={`px-3 py-1.5 rounded text-[10px] uppercase font-bold tracking-wider flex items-center gap-1 transition-all ${
-                    isActive
-                      ? "bg-gold text-black"
-                      : "bg-white/5 hover:bg-white/10 text-white/80 border border-white/5"
-                  }`}
-                >
-                  <span>Locate</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                {/* Unified Map controls targeting look & feel from your map cards */}
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectHotel && onSelectHotel(hotel)}
+                    className={`px-2.5 py-1.5 rounded text-[10px] uppercase font-mono tracking-wider transition-all border font-bold ${
+                      isActive
+                        ? "bg-[#d4af37] text-black border-[#d4af37]"
+                        : "bg-transparent text-[#d4af37] border-white/10 hover:border-[#d4af37]/40"
+                    }`}
+                  >
+                    View On Map
+                  </button>
+
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1.5 rounded text-[10px] uppercase font-mono tracking-wider transition-all border border-white/10 bg-white/[0.02] text-white/60 hover:text-white hover:border-white/20 flex items-center gap-1 font-bold"
+                  >
+                    <span>Google Maps</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
+
             </div>
           );
         })}
