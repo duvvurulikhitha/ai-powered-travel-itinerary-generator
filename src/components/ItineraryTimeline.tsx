@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { DayItinerary, Activity } from "../types";
-import { Clock, Navigation, MapPin, Tag, Calendar, Sparkles, ExternalLink } from "lucide-react";
+import { Clock, Navigation, MapPin, Tag, Calendar, ExternalLink } from "lucide-react";
 
 interface ItineraryTimelineProps {
   itineraryDays: DayItinerary[];
@@ -9,6 +9,51 @@ interface ItineraryTimelineProps {
   onSelectActivity?: (activity: Activity) => void;
   activeActivityName?: string;
   onViewOnMap?: (activity: Activity) => void;
+}
+
+// Smart component to dynamically fetch images from Unsplash based on place names
+function DynamicDestinationImage({ placeName }: { placeName: string }) {
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=600"); // Travel fallback placeholder
+
+  useEffect(() => {
+    async function fetchImage() {
+      try {
+        const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+        if (!accessKey) return;
+
+        const response = await fetch(
+          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(placeName)}&per_page=1`,
+          {
+            headers: {
+              Authorization: `Client-ID ${accessKey}`
+            }
+          }
+        );
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          setImageUrl(data.results[0].urls.regular);
+        }
+      } catch (error) {
+        console.error("Error fetching image from Unsplash:", error);
+      }
+    }
+
+    if (placeName) {
+      fetchImage();
+    }
+  }, [placeName]);
+
+  return (
+    <img
+      src={imageUrl}
+      alt={placeName}
+      referrerPolicy="no-referrer"
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      onError={(e) => {
+        e.currentTarget.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=600";
+      }}
+    />
+  );
 }
 
 export default function ItineraryTimeline({
@@ -94,16 +139,9 @@ export default function ItineraryTimeline({
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row gap-4">
-                      {activity.imageUrl && (
-                        <div className="w-full sm:w-28 h-24 sm:h-28 rounded-lg overflow-hidden border border-white/10 shrink-0">
-                          <img
-                            src={activity.imageUrl}
-                            alt={activity.placeName}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        </div>
-                      )}
+                      <div className="w-full sm:w-28 h-24 sm:h-28 rounded-lg overflow-hidden border border-white/10 shrink-0">
+                        <DynamicDestinationImage placeName={activity.placeName} />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="space-y-0.5">
