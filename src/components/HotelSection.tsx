@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Hotel } from "../types";
 import { Star, MapPin, Building, ChevronRight, DollarSign } from "lucide-react";
 
@@ -6,6 +6,52 @@ interface HotelSectionProps {
   hotels: Hotel[];
   onSelectHotel?: (hotel: Hotel) => void;
   activeHotelName?: string;
+}
+
+// Micro-component to look up hotel-specific imagery dynamically from Unsplash
+function DynamicHotelImage({ hotelName, className }: { hotelName: string; className?: string }) {
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600"); // Quality fallback
+
+  useEffect(() => {
+    async function fetchHotelImage() {
+      try {
+        const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+        if (!accessKey) return;
+
+        const searchQuery = `${hotelName} hotel accommodation`;
+        const response = await fetch(
+          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=1`,
+          {
+            headers: {
+              Authorization: `Client-ID ${accessKey}`
+            }
+          }
+        );
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          setImageUrl(data.results[0].urls.small);
+        }
+      } catch (error) {
+        console.error("Error fetching hotel image from Unsplash:", error);
+      }
+    }
+
+    if (hotelName) {
+      fetchHotelImage();
+    }
+  }, [hotelName]);
+
+  return (
+    <img
+      src={imageUrl}
+      alt={hotelName}
+      referrerPolicy="no-referrer"
+      className={className || "w-full h-full object-cover"}
+      onError={(e) => {
+        e.currentTarget.src = "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600";
+      }}
+    />
+  );
 }
 
 export default function HotelSection({
@@ -40,16 +86,14 @@ export default function HotelSection({
                   : "border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10"
               }`}
             >
-              {hotel.imageUrl && (
-                <div className="w-full md:w-32 h-28 md:h-24 rounded-lg overflow-hidden border border-white/10 shrink-0">
-                  <img
-                    src={hotel.imageUrl}
-                    alt={hotel.hotelName}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+              {/* Dynamic Unsplash Image wrapper using your original container sizes */}
+              <div className="w-full md:w-32 h-28 md:h-24 rounded-lg overflow-hidden border border-white/10 shrink-0">
+                <DynamicHotelImage
+                  hotelName={hotel.hotelName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
               <div className="flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-white text-sm md:text-base leading-tight font-serif">
