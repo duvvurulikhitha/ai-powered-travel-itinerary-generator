@@ -16,6 +16,51 @@ interface SavedItinerary {
   timestamp: string;
 }
 
+// Smart component to dynamically fetch images from Unsplash based on place names
+function DynamicDestinationImage({ placeName, className }: { placeName: string; className?: string }) {
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800"); // Travel fallback placeholder
+
+  useEffect(() => {
+    async function fetchImage() {
+      try {
+        const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+        if (!accessKey) return;
+
+        const response = await fetch(
+          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(placeName)}&per_page=1`,
+          {
+            headers: {
+              Authorization: `Client-ID ${accessKey}`
+            }
+          }
+        );
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          setImageUrl(data.results[0].urls.regular);
+        }
+      } catch (error) {
+        console.error("Error fetching image from Unsplash:", error);
+      }
+    }
+
+    if (placeName) {
+      fetchImage();
+    }
+  }, [placeName]);
+
+  return (
+    <img
+      src={imageUrl}
+      alt={placeName}
+      referrerPolicy="no-referrer"
+      className={className || "w-full h-full object-cover"}
+      onError={(e) => {
+        e.currentTarget.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800";
+      }}
+    />
+  );
+}
+
 export default function App() {
   const [itinerary, setItinerary] = useState<TripItinerary | null>(null);
   const [selectedDay, setSelectedDay] = useState(1);
@@ -252,7 +297,6 @@ export default function App() {
 
           {/* Right Column: Interactive map dashboard, itinerary and stay lists */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Error Overlay Fallback view */}
             {error && (
               <div className="bg-red-950/10 border border-red-900/30 rounded-2xl p-6 flex items-start gap-4" id="error-banner">
                 <div className="p-2 bg-red-950/40 border border-red-900/50 text-red-400 rounded-xl shrink-0">
@@ -277,11 +321,9 @@ export default function App() {
               </div>
             )}
 
-            {/* Display loading screen */}
             {isLoading && !itinerary && (
               <div className="bg-[#080808] border border-white/10 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[450px]" id="loading-state">
                 <div className="relative w-20 h-20 mb-6">
-                  {/* Glowing orbital loader */}
                   <div className="absolute inset-0 rounded-full border-4 border-white/5" />
                   <div className="absolute inset-0 rounded-full border-4 border-gold border-t-transparent animate-spin" />
                   <div className="absolute inset-4 rounded-full bg-gold/10 flex items-center justify-center text-gold">
@@ -306,7 +348,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Result Dashboard view */}
             {itinerary && !isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -315,19 +356,16 @@ export default function App() {
                 className="space-y-6"
                 id="itinerary-dashboard"
               >
-                {/* Trip Overview Summary Badge */}
+                {/* Trip Overview Summary Badge with dynamic Unsplash search */}
                 <div className="bg-gradient-to-r from-[#0a0a0a] to-[#121212] border border-white/10 rounded-2xl overflow-hidden text-white shadow-md flex flex-col md:flex-row gap-6">
-                  {itinerary.destinationImageUrl && (
-                    <div className="w-full md:w-1/3 h-56 md:h-auto shrink-0 relative">
-                      <img
-                        src={itinerary.destinationImageUrl}
-                        alt={currentRequest?.destination}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover animate-fade-in"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent md:from-transparent md:to-[#0a0a0a]" />
-                    </div>
-                  )}
+                  <div className="w-full md:w-1/3 h-56 md:h-auto shrink-0 relative">
+                    <DynamicDestinationImage 
+                      placeName={currentRequest?.destination || "Travel Destination"} 
+                      className="w-full h-full object-cover animate-fade-in"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent md:from-transparent md:to-[#0a0a0a]" />
+                  </div>
+                  
                   <div className="p-6 flex-1 flex flex-col justify-center space-y-3 relative z-10">
                     <div className="absolute right-0 bottom-0 translate-x-1/10 translate-y-1/10 pointer-events-none opacity-5">
                       <Compass className="w-64 h-64" />
@@ -354,7 +392,6 @@ export default function App() {
 
                 {/* Location Insights & Budget Breakdown Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="insights-section">
-                  {/* Location Insights Card */}
                   <div className="bg-[#080808] border border-white/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div className="space-y-4">
                       <h3 className="text-base font-serif italic text-white flex items-center gap-2">
@@ -390,7 +427,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Budget Breakdown Card */}
                   <div className="bg-[#080808] border border-white/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-4">
@@ -430,7 +466,6 @@ export default function App() {
 
                 {/* Grid Layout of Map & Detailed components */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Map panel */}
                   <div className="h-full min-h-[480px]">
                     <WanderMap
                       itinerary={itinerary}
@@ -441,7 +476,6 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Daily Schedule Vertical timeline */}
                   <div>
                     <ItineraryTimeline
                       itineraryDays={itinerary.itinerary}
@@ -460,7 +494,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Curated Hotel Stays section */}
                 <HotelSection
                   hotels={itinerary.hotels}
                   onSelectHotel={handleSelectHotel}
@@ -469,7 +502,6 @@ export default function App() {
               </motion.div>
             )}
 
-            {/* Default Landing Empty Dashboard */}
             {!itinerary && !isLoading && (
               <EmptyState 
                 onSelectPreset={handleSelectPreset} 
