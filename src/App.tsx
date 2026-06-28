@@ -537,7 +537,7 @@ export default function App() {
       <footer className="bg-[#050505] border-t border-white/10 py-6 mt-12 text-center text-xs text-white/30">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] uppercase tracking-widest">
           <div>
-            © 2026 Nomad.AI Travel Synthesis. Built in Google AI Studio.
+            © 2026 Nomad.AI Travel Synthesis.
           </div>
           <div className="flex gap-4">
             <span>Model: gemini-3.5-flash</span>
