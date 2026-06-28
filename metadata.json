@@ -1,0 +1,6 @@
+{
+  "name": "AI Travel Itinerary Generator",
+  "description": "Generate structured, personalized travel itineraries tailored to your companion, budget, and duration with interactive maps and detailed day-by-day timelines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
