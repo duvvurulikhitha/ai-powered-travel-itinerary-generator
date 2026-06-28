@@ -74,7 +74,7 @@ export default function HotelSection({
         {hotels.map((hotel, idx) => {
           const isActive = activeHotelName === hotel.hotelName;
 
-          // Safely build dynamic Google Maps deep links
+          // External Google Maps redirection string
           const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
             `${hotel.hotelName} ${hotel.address || ""}`
           )}`;
@@ -120,7 +120,7 @@ export default function HotelSection({
                 </p>
               </div>
 
-              {/* Layout Fixed: Rate Label + Match styling for Map Actions */}
+              {/* Layout Actions pricing & control bar */}
               <div className="flex md:flex-col items-end justify-between w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/5 gap-3">
                 <div className="flex flex-col items-start md:items-end">
                   <span className="text-[9px] uppercase font-mono tracking-widest text-white/40 font-semibold">
@@ -131,8 +131,9 @@ export default function HotelSection({
                   </span>
                 </div>
 
-                {/* Unified Map controls targeting look & feel from your map cards */}
+                {/* Map actions layout block */}
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  {/* VIEW ON MAP - Safely updates internal application interactive map state */}
                   <button
                     type="button"
                     onClick={() => onSelectHotel && onSelectHotel(hotel)}
@@ -145,6 +146,7 @@ export default function HotelSection({
                     View On Map
                   </button>
 
+                  {/* GOOGLE MAPS - Safely links to external window target */}
                   <a
                     href={googleMapsUrl}
                     target="_blank"
