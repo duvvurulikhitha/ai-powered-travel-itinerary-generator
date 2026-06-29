@@ -539,11 +539,7 @@ export default function App() {
           <div>
             © 2026 Nomad.AI Travel Synthesis.
           </div>
-          <div className="flex gap-4">
-            <span>Model: gemini-3.5-flash</span>
-            <span>•</span>
-            <span>JSON Data Synchronized</span>
-          </div>
+          
         </div>
       </footer>
     </div>
